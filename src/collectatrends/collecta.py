@@ -1,24 +1,21 @@
-import httplib
 import urllib
-from opensearch import Feed
+from opensearch import OpenSearch
 
 class Collecta(object):
 	"""
 	http://developer.collecta.com/Transports/HttpApi/
 	"""
 	def __init__(self, key=None):
-		self.conn = httplib.HTTPConnection("api.collecta.com")
+		self.key = key
 	def query(self, **args):
-		self.conn.request("GET", "/search?%s" % urllib.urlencode(args))
-		res = self.conn.getresponse()
-		if res.status != 200:
-			raise Exception('http')
-		return Feed(res)
-
+		if self.key != None:
+			args['api_key'] = self.key
+		self.opensearch = OpenSearch("api.collecta.com")
+		return self.opensearch.query("/search?%s" % urllib.urlencode(args))
 
 if __name__ == '__main__':
 	c = Collecta()
-	results = c.query(q='python', rpp=10)
+	results = c.query(q='python language:fr', rpp=10)
 	print len(results)
 	#print list(results.keys())
 	for result in results:
