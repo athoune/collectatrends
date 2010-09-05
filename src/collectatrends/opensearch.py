@@ -33,7 +33,7 @@ class Feed(object):
 	def __iter__(self):
 		#[TODO] iter over pages
 		for entry in self.tree.getiterator('{http://www.w3.org/2005/Atom}entry'):
-			yield Entry(entry)
+			yield self.opensearch.entry(entry)
 
 
 class OpenSearch(object):
@@ -46,5 +46,5 @@ class OpenSearch(object):
 		res = self.conn.getresponse()
 		if res.status != 200:
 			raise Exception('http')
-		return Feed(self, res)
+		return self.feed(self, res)
 
