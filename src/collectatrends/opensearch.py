@@ -39,3 +39,6 @@ class Entry(object):
 		self.category = raw.find('{http://api.collecta.com/ns/search-0#results}category').text
 		self.site = raw.find('{http://api.collecta.com/ns/search-0#results}site').text
 		self.abstract = raw.find('{http://api.collecta.com/ns/search-0#results}abstract').text
+		self.tags = []
+		for tag in raw.getiterator('{http://www.w3.org/2005/Atom}tags'):
+			self.tags.append(tag.attrib['term'])
