@@ -25,6 +25,9 @@ class Feed(object):
 		self.opensearch = opensearch
 		self.tree = ElementTree()
 		self.tree.parse(raw)
+		self.links = {}
+		for link in self.tree.getiterator('{http://www.w3.org/2005/Atom}link'):
+			self.links[link.attrib['rel']] = link.attrib['href']
 	def keys(self):
 		for entry in self.tree.getiterator('*'):
 			yield entry.tag

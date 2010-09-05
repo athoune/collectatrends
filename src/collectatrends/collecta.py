@@ -17,6 +17,7 @@ if __name__ == '__main__':
 	c = Collecta()
 	results = c.query(q='python language:fr', rpp=10)
 	print len(results)
+	print results.links['after']
 	#print list(results.keys())
 	for result in results:
 		print result.id
