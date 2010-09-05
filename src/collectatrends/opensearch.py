@@ -20,8 +20,9 @@ class Entry(object):
 			self.tags.append(tag.attrib['term'])
 
 class Feed(object):
-	def __init__(self, raw):
+	def __init__(self, opensearch, raw):
 		#print raw.read()
+		self.opensearch = opensearch
 		self.tree = ElementTree()
 		self.tree.parse(raw)
 	def keys(self):
@@ -30,6 +31,7 @@ class Feed(object):
 	def __len__(self):
 		return int(self.tree.find('{http://a9.com/-/spec/opensearch/1.1/}totalResults').text)
 	def __iter__(self):
+		#[TODO] iter over pages
 		for entry in self.tree.getiterator('{http://www.w3.org/2005/Atom}entry'):
 			yield Entry(entry)
 
@@ -44,5 +46,5 @@ class OpenSearch(object):
 		res = self.conn.getresponse()
 		if res.status != 200:
 			raise Exception('http')
-		return Feed(res)
+		return Feed(self, res)
 
