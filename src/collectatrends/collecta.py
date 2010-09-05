@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	c = Collecta()
 	results = c.query('python')
 	print len(results)
-	#for result in results:
-		#pass
-	#	print ' '
-	#	print result.tag
+	#print list(results.keys())
+	for result in results:
+		print result.id
+		print "\t", result.title
