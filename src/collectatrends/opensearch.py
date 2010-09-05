@@ -1,3 +1,7 @@
+"""
+Opensearch response object with collecta and other extensions
+"""
+
 from xml.etree.ElementTree import ElementTree
 
 class Feed(object):
@@ -31,3 +35,7 @@ class Entry(object):
 		self.id = raw.find('{http://www.w3.org/2005/Atom}id').text
 		self.title = raw.find('{http://www.w3.org/2005/Atom}title').text
 		self.link = raw.find('{http://www.w3.org/2005/Atom}link').text
+		self.language = raw.find('{http://api.collecta.com/ns/search-0#results}language').text
+		self.category = raw.find('{http://api.collecta.com/ns/search-0#results}category').text
+		self.site = raw.find('{http://api.collecta.com/ns/search-0#results}site').text
+		self.abstract = raw.find('{http://api.collecta.com/ns/search-0#results}abstract').text
