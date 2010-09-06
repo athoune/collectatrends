@@ -2,9 +2,19 @@
 Opensearch response object with collecta and other extensions
 """
 
+__author__ = "mathieu@garambrogne.net"
+
 import httplib
 from urlparse import urlparse, parse_qs
 from xml.etree.ElementTree import ElementTree
+import json
+import hashlib
+import os.path
+
+def cache_name(query):
+	sha1 = hashlib.sha1()
+	sha1.update(query)
+	return sha1.hexdigest() + '.json'
 
 class Entry(object):
 	def __init__(self, raw):
@@ -21,7 +31,7 @@ class Entry(object):
 			self.tags.append(tag.attrib['term'])
 
 class Feed(object):
-	def __init__(self, opensearch, raw):
+	def __init__(self, opensearch, raw, remember=False):
 		#print raw.read()
 		self.opensearch = opensearch
 		self.tree = ElementTree()
@@ -37,7 +47,10 @@ class Feed(object):
 			self.next_url = '%s?%s' % (a.path, a.query)
 		if self.links.has_key('after'):
 			a = urlparse(self.links['after'])
-			self.after_id = parse_qs(a.query).get('after_id', None)[0]
+			p = parse_qs(a.query)
+			self.after_id = p.get('after_id', None)[0]
+			if remember:
+				json.dump({'q': p['q'][0], 'after_id' : self.after_id}, open(cache_name(p['q'][0]), 'w+'))
 	def keys(self):
 		for entry in self.tree.getiterator('*'):
 			yield entry.tag
@@ -58,10 +71,15 @@ class OpenSearch(object):
 		self.feed = feed
 		self.entry = entry
 		self.conn = httplib.HTTPConnection(domain)
-	def query(self, path):
+	def query(self, path, remember=False):
+		if remember:
+			p = parse_qs(urlparse(path).query)
+			cache = cache_name(p['q'][0])
+			if os.path.exists(cache) and not p.has_key('since_id'):
+				path += '&since_id=%s' % json.load(open(cache, 'r'))['after_id']
 		self.conn.request("GET", path)
 		res = self.conn.getresponse()
 		if res.status != 200:
 			raise Exception('http', "%s: %s" % (res.status, path))
-		return self.feed(self, res)
+		return self.feed(self, res, remember)
 
