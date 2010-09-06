@@ -18,8 +18,8 @@ if __name__ == '__main__':
 	c = Collecta()
 	results = c.query(q='python language:fr', rpp=10)
 	print len(results)
-	print results.links['after']
+	print results.after_id
 	#print list(results.keys())
-	for result in results:
-		print result.id
-		print "\t", result.title, result.tags
+	#for result in results:
+	#	print result.id
+	#	print "\t", result.title, result.tags

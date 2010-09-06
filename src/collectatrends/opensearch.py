@@ -3,7 +3,7 @@ Opensearch response object with collecta and other extensions
 """
 
 import httplib
-from urlparse import urlparse
+from urlparse import urlparse, parse_qs
 from xml.etree.ElementTree import ElementTree
 
 class Entry(object):
@@ -30,22 +30,25 @@ class Feed(object):
 		for link in self.tree.getiterator('{http://www.w3.org/2005/Atom}link'):
 			if link.attrib.has_key('rel'):
 				self.links[link.attrib['rel']] = link.attrib['href']
+		self.after_id = None
+		self.next_url = None
 		if self.links.has_key('next'):
 			a = urlparse(self.links['next'])
-			self.next = '%s?%s' % (a.path, a.query)
-		else:
-			self.next = None
+			self.next_url = '%s?%s' % (a.path, a.query)
+		if self.links.has_key('after'):
+			a = urlparse(self.links['after'])
+			self.after_id = parse_qs(a.query).get('after_id', None)[0]
 	def keys(self):
 		for entry in self.tree.getiterator('*'):
 			yield entry.tag
 	def __len__(self):
 		return int(self.tree.find('{http://a9.com/-/spec/opensearch/1.1/}totalResults').text)
 	def __iter__(self):
-		#[TODO] iter over pages
 		for entry in self.tree.getiterator('{http://www.w3.org/2005/Atom}entry'):
 			yield self.opensearch.entry(entry)
-		if self.next != None:
-			f = self.opensearch.query(self.next)
+		if self.next_url != None:
+			#[TODO] Don't use recursivity, iter over pages
+			f = self.opensearch.query(self.next_url)
 			for entry in f:
 				yield entry
 
