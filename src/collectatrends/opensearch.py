@@ -3,6 +3,7 @@ Opensearch response object with collecta and other extensions
 """
 
 import httplib
+from urlparse import urlparse
 from xml.etree.ElementTree import ElementTree
 
 class Entry(object):
@@ -27,7 +28,13 @@ class Feed(object):
 		self.tree.parse(raw)
 		self.links = {}
 		for link in self.tree.getiterator('{http://www.w3.org/2005/Atom}link'):
-			self.links[link.attrib['rel']] = link.attrib['href']
+			if link.attrib.has_key('rel'):
+				self.links[link.attrib['rel']] = link.attrib['href']
+		if self.links.has_key('next'):
+			a = urlparse(self.links['next'])
+			self.next = '%s?%s' % (a.path, a.query)
+		else:
+			self.next = None
 	def keys(self):
 		for entry in self.tree.getiterator('*'):
 			yield entry.tag
@@ -37,6 +44,10 @@ class Feed(object):
 		#[TODO] iter over pages
 		for entry in self.tree.getiterator('{http://www.w3.org/2005/Atom}entry'):
 			yield self.opensearch.entry(entry)
+		if self.next != None:
+			f = self.opensearch.query(self.next)
+			for entry in f:
+				yield entry
 
 
 class OpenSearch(object):
@@ -48,6 +59,6 @@ class OpenSearch(object):
 		self.conn.request("GET", path)
 		res = self.conn.getresponse()
 		if res.status != 200:
-			raise Exception('http')
+			raise Exception('http', "%s: %s" % (res.status, path))
 		return self.feed(self, res)
 

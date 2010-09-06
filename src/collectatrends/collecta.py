@@ -10,6 +10,7 @@ class Collecta(object):
 	def query(self, **args):
 		if self.key != None:
 			args['api_key'] = self.key
+		#args['rpp'] = 50
 		self.opensearch = OpenSearch("api.collecta.com")
 		return self.opensearch.query("/search?%s" % urllib.urlencode(args))
 
