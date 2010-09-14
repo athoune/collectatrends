@@ -24,6 +24,6 @@ if __name__ == '__main__':
 	print len(results)
 	print results.after_id
 	#print list(results.keys())
-	#for result in results:
-	#	print result.id
-	#	print "\t", result.title, result.tags
+	for result in results:
+		print result.id
+		print "\t", result.title, result.tags
