@@ -50,7 +50,7 @@ class Feed(object):
 			p = parse_qs(a.query)
 			self.after_id = p.get('after_id', None)[0]
 			if remember:
-				json.dump({'q': p['q'][0], 'after_id' : self.after_id}, open(cache_name(p['q'][0]), 'w+'))
+				json.dump({'q': p['q'][0], 'after_id' : self.after_id, 'total' : len(self)}, open(cache_name(p['q'][0]), 'w+'))
 	def keys(self):
 		for entry in self.tree.getiterator('*'):
 			yield entry.tag
@@ -61,9 +61,10 @@ class Feed(object):
 			yield self.opensearch.entry(entry)
 		if self.next_url != None:
 			#[TODO] Don't use recursivity, iter over pages
-			f = self.opensearch.query(self.next_url)
-			for entry in f:
-				yield entry
+			t = ElementTree()
+			t.parse(self.opensearch.raw_query(self.next_url))
+			for entry in t.getiterator('{http://www.w3.org/2005/Atom}entry'):
+				yield self.opensearch.entry(entry)
 
 
 class OpenSearch(object):
@@ -71,15 +72,17 @@ class OpenSearch(object):
 		self.feed = feed
 		self.entry = entry
 		self.conn = httplib.HTTPConnection(domain)
+	def raw_query(self, path):
+		self.conn.request("GET", path)
+		res = self.conn.getresponse()
+		if res.status != 200:
+			raise Exception('http', "%s: %s" % (res.status, path))
+		return res
 	def query(self, path, remember=False):
 		if remember:
 			p = parse_qs(urlparse(path).query)
 			cache = cache_name(p['q'][0])
 			if os.path.exists(cache) and not p.has_key('since_id'):
 				path += '&since_id=%s' % json.load(open(cache, 'r'))['after_id']
-		self.conn.request("GET", path)
-		res = self.conn.getresponse()
-		if res.status != 200:
-			raise Exception('http', "%s: %s" % (res.status, path))
-		return self.feed(self, res, remember)
+		return self.feed(self, self.raw_query(path), remember)
 
