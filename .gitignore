@@ -1,2 +1,5 @@
 *.pyc
 *.json
+src/Collecta_Trends.egg-info
+build
+dist
