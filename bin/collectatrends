@@ -1,15 +1,28 @@
 #!/usr/bin/env python
 
 from optparse import OptionParser
+import os
+import os.path
+import hashlib
 
 from collectatrends.collecta import Collecta
+from collectatrends.store import DbmStore
 
 if __name__ == '__main__':
 	parser = OptionParser()
 	parser.add_option("-q", "--query", dest="query", help="collecta query")
-	parser.add_option("-f", "--folder", dest="folder", default='~.collectatrends', help="folder to store trends")
+	parser.add_option("-f", "--folder", dest="folder", default='~/.collectatrends', help="folder to store trends")
 
 	(options, args) = parser.parse_args()
 	c = Collecta(remember=True)
 	results = c.query(q=options.query)
-	print list(results)
+	h = hashlib.sha1()
+	h.update(options.query)
+	path = '%s/%s.db' % (os.path.expanduser(options.folder), h.hexdigest())
+	folder = os.path.dirname(path)
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+	d = DbmStore(path)
+	for r in results:
+		d[r['id']] = r
+	print len(d)
