@@ -16,19 +16,19 @@ def cache_name(query):
 	sha1.update(query)
 	return sha1.hexdigest() + '.json'
 
-class Entry(object):
-	def __init__(self, raw):
-		self.raw = raw
-		self.id = raw.find('{http://www.w3.org/2005/Atom}id').text
-		self.title = raw.find('{http://www.w3.org/2005/Atom}title').text
-		self.link = raw.find('{http://www.w3.org/2005/Atom}link').text
-		self.language = raw.find('{http://api.collecta.com/ns/search-0#results}language').text
-		self.category = raw.find('{http://api.collecta.com/ns/search-0#results}category').text
-		self.site = raw.find('{http://api.collecta.com/ns/search-0#results}site').text
-		self.abstract = raw.find('{http://api.collecta.com/ns/search-0#results}abstract').text
-		self.tags = []
-		for tag in raw.getiterator('{http://www.w3.org/2005/Atom}tags'):
-			self.tags.append(tag.attrib['term'])
+def Entry(raw):
+	e = {}
+	e['id'] = raw.find('{http://www.w3.org/2005/Atom}id').text
+	e['title'] = raw.find('{http://www.w3.org/2005/Atom}title').text
+	e['link'] = raw.find('{http://www.w3.org/2005/Atom}link').text
+	e['language'] = raw.find('{http://api.collecta.com/ns/search-0#results}language').text
+	e['category'] = raw.find('{http://api.collecta.com/ns/search-0#results}category').text
+	e['site'] = raw.find('{http://api.collecta.com/ns/search-0#results}site').text
+	e['abstract'] = raw.find('{http://api.collecta.com/ns/search-0#results}abstract').text
+	e['tags'] = []
+	for tag in raw.getiterator('{http://www.w3.org/2005/Atom}tags'):
+		e['tags'].append(tag.attrib['term'])
+	return e
 
 class Feed(object):
 	def __init__(self, opensearch, raw, remember=False):
