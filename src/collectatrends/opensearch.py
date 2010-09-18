@@ -6,10 +6,12 @@ __author__ = "mathieu@garambrogne.net"
 
 import httplib
 from urlparse import urlparse, parse_qs
+from urllib import urlencode
 from xml.etree.ElementTree import ElementTree
 import json
 import hashlib
 import os.path
+import math
 
 def cache_name(query):
 	sha1 = hashlib.sha1()
@@ -60,11 +62,18 @@ class Feed(object):
 		for entry in self.tree.getiterator('{http://www.w3.org/2005/Atom}entry'):
 			yield self.opensearch.entry(entry)
 		if self.next_url != None:
-			#[TODO] Don't use recursivity, iter over pages
+			items_per_page = int(self.tree.find('{http://a9.com/-/spec/opensearch/1.1/}itemsPerPage').text)
 			t = ElementTree()
-			t.parse(self.opensearch.raw_query(self.next_url))
-			for entry in t.getiterator('{http://www.w3.org/2005/Atom}entry'):
-				yield self.opensearch.entry(entry)
+			a = urlparse(self.next_url)
+			p = parse_qs(a.query)
+			p['q'] = p['q'][0]
+			#print "pages:", len(self), 2, int(math.ceil(len(self) / items_per_page))+1
+			for page in range(2, int(math.ceil(len(self) / items_per_page)) +1):
+				p['page'] = page
+				url = '%s?%s' % (a.path, urlencode(p))
+				t.parse(self.opensearch.raw_query(url))
+				for entry in t.getiterator('{http://www.w3.org/2005/Atom}entry'):
+					yield self.opensearch.entry(entry)
 
 
 class OpenSearch(object):
