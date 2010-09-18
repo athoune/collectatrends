@@ -24,4 +24,4 @@ if __name__ == '__main__':
 	d = DbmStore(path)
 	for r in results:
 		d[r['id']] = r
-	print len(d)
+	print len(results), len(d)
