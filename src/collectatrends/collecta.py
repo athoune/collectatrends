@@ -25,5 +25,5 @@ if __name__ == '__main__':
 	print results.after_id
 	#print list(results.keys())
 	for result in results:
-		print result.id
-		print "\t", result.title, result.tags
+		print result['id']
+		#print "\t", result['title'], result['tags']
