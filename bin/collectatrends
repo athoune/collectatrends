@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+__author__ = 'mathieu@garambrogne.net'
+
 from optparse import OptionParser
-import os
-import os.path
 import hashlib
+import os.path
 
 from collectatrends.collecta import Collecta
-from collectatrends.store import DbmStore
+from collectatrends.store import DbmStore, mkdir_p
 
 if __name__ == '__main__':
 	parser = OptionParser()
@@ -19,9 +20,7 @@ if __name__ == '__main__':
 	h = hashlib.sha1()
 	h.update(options.query)
 	path = '%s/%s.db' % (os.path.expanduser(options.folder), h.hexdigest())
-	folder = os.path.dirname(path)
-	if not os.path.exists(folder):
-		os.makedirs(folder)
+	mkdir_p(path)
 	d = DbmStore(path)
 	for r in results:
 		d[r['id']] = r
