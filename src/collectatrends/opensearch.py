@@ -86,7 +86,8 @@ class Feed(object):
 				for entry in t.getiterator('{http://www.w3.org/2005/Atom}entry'):
 					yield self.opensearch.entry(entry)
 
-
+class TooManyQuestion(Exception):
+	pass
 class OpenSearch(object):
 	def __init__(self, domain, feed=Feed, entry = Entry, cache_folder='~/.openserach'):
 		self.feed = feed
@@ -96,6 +97,8 @@ class OpenSearch(object):
 	def raw_query(self, path):
 		self.conn.request("GET", path)
 		res = self.conn.getresponse()
+		if res.status == 401:
+			raise TooManyQuestion()
 		if res.status != 200:
 			raise Exception('http', "%s: %s" % (res.status, path))
 		return res
