@@ -8,6 +8,7 @@ import os.path
 
 from collectatrends.collecta import Collecta
 from collectatrends.store import DbmStore, mkdir_p
+from collectatrends.opensearch import TooManyQuestion
 
 from roundrobin.rrd import create, COUNTER, AVERAGE
 
@@ -24,8 +25,11 @@ if __name__ == '__main__':
 	path = '%s/%s' % (os.path.expanduser(options.folder), h.hexdigest())
 	mkdir_p(path)
 	d = DbmStore(path)
-	for r in results:
-		d[r['id']] = r
+	try:
+		for r in results:
+			d[r['id']] = r
+	except TooManyQuestion:
+		print "Too many questions"
 	print len(results), len(d)
 	path = '%s/%s.rrd' % (os.path.expanduser(options.folder), h.hexdigest())
 	mkdir_p(path)
