@@ -12,6 +12,7 @@ import json
 import hashlib
 import os.path
 import math
+import time
 
 def cache_name(query):
 	sha1 = hashlib.sha1()
@@ -76,6 +77,9 @@ class Feed(object):
 			p['q'] = p['q'][0]
 			#print "pages:", len(self), 2, int(math.ceil(len(self) / items_per_page))+1
 			for page in range(2, int(math.ceil(len(self) / items_per_page)) +1):
+				if page % 5 == 0:
+					time.sleep(10)
+					print "pause"
 				p['page'] = page
 				url = '%s?%s' % (a.path, urlencode(p))
 				t.parse(self.opensearch.raw_query(url))
