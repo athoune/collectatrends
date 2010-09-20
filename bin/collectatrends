@@ -15,11 +15,11 @@ if __name__ == '__main__':
 	parser.add_option("-f", "--folder", dest="folder", default='~/.collectatrends', help="folder to store trends")
 
 	(options, args) = parser.parse_args()
-	c = Collecta(remember=True)
+	c = Collecta(remember=True, cache_folder = options.folder)
 	results = c.query(q=options.query)
 	h = hashlib.sha1()
 	h.update(options.query)
-	path = '%s/%s.db' % (os.path.expanduser(options.folder), h.hexdigest())
+	path = '%s/%s' % (os.path.expanduser(options.folder), h.hexdigest())
 	mkdir_p(path)
 	d = DbmStore(path)
 	for r in results:

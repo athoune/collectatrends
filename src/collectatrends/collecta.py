@@ -8,14 +8,15 @@ class Collecta(object):
 	"""
 	http://developer.collecta.com/Transports/HttpApi/
 	"""
-	def __init__(self, key=None, remember=False):
+	def __init__(self, key=None, remember=False, cache_folder='~/.collecta'):
 		self.key = key
 		self.remember = remember
+		self.cache_folder = cache_folder
 	def query(self, **args):
 		if self.key != None:
 			args['api_key'] = self.key
 		#args['rpp'] = 50
-		self.opensearch = OpenSearch("api.collecta.com")
+		self.opensearch = OpenSearch("api.collecta.com", cache_folder=self.cache_folder)
 		return self.opensearch.query("/search?%s" % urllib.urlencode(args), self.remember)
 
 if __name__ == '__main__':

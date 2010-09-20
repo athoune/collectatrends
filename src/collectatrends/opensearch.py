@@ -18,6 +18,11 @@ def cache_name(query):
 	sha1.update(query)
 	return sha1.hexdigest() + '.json'
 
+def mkdir_p(path):
+	folder = os.path.dirname(path)
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+
 def Entry(raw):
 	e = {}
 	e['id'] = raw.find('{http://www.w3.org/2005/Atom}id').text
@@ -52,7 +57,9 @@ class Feed(object):
 			p = parse_qs(a.query)
 			self.after_id = p.get('after_id', None)[0]
 			if remember:
-				json.dump({'q': p['q'][0], 'after_id' : self.after_id, 'total' : len(self)}, open(cache_name(p['q'][0]), 'w+'))
+				cache = "%s/%s" % (self.opensearch.cache_folder, cache_name(p['q'][0]))
+				mkdir_p(cache)
+				json.dump({'q': p['q'][0], 'after_id' : self.after_id, 'total' : len(self)}, open(cache, 'w+'))
 	def keys(self):
 		for entry in self.tree.getiterator('*'):
 			yield entry.tag
@@ -77,9 +84,10 @@ class Feed(object):
 
 
 class OpenSearch(object):
-	def __init__(self, domain, feed=Feed, entry = Entry):
+	def __init__(self, domain, feed=Feed, entry = Entry, cache_folder='~/.openserach'):
 		self.feed = feed
 		self.entry = entry
+		self.cache_folder = os.path.expanduser(cache_folder)
 		self.conn = httplib.HTTPConnection(domain)
 	def raw_query(self, path):
 		self.conn.request("GET", path)
