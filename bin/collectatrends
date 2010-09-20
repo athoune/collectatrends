@@ -9,6 +9,8 @@ import os.path
 from collectatrends.collecta import Collecta
 from collectatrends.store import DbmStore, mkdir_p
 
+from roundrobin.rrd import create, COUNTER, AVERAGE
+
 if __name__ == '__main__':
 	parser = OptionParser()
 	parser.add_option("-q", "--query", dest="query", help="collecta query")
@@ -25,3 +27,11 @@ if __name__ == '__main__':
 	for r in results:
 		d[r['id']] = r
 	print len(results), len(d)
+	path = '%s/%s.rrd' % (os.path.expanduser(options.folder), h.hexdigest())
+	mkdir_p(path)
+	rrd = create(path,
+		COUNTER(options.query, 600, 'U','U'),
+		AVERAGE(0.5, 1, 24),
+		AVERAGE(0.5, 6, 10),
+		)
+	rrd.update([(None, len(d))])
